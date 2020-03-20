@@ -1,0 +1,24 @@
+@ECHO OFF
+:: Script to backup common app settings - Rick Heiss rheiss@gmail.com https://github.com/rheiss
+CLS
+:: Export Putty reg key to local file
+REGEDIT.EXE  /s /E  "%USERPROFILE%\documents\backups\putty_settings.reg" "HKEY_CURRENT_USER\Software\SimonTatham"
+:: Make Copy of iPhone backups
+copy "%APPDATA%\Apple Computer\MobileSync\backup\*" "%USERPROFILE%\documents\backups\iphonebackup\"
+:: Backup FileZilla Settings
+copy %USERPROFILE%\AppData\Roaming\FileZilla\filezilla.xml "%USERPROFILE%\documents\backups\filezilla_settings.xml"
+copy %USERPROFILE%\AppData\Roaming\FileZilla\sitemanager.xml "%USERPROFILE%\documents\backups\filezilla_sitemanager.xml"
+:: Backup IE bookmarks
+copy %USERPROFILE%\favorites "%USERPROFILE%\documents\backups\favorites"
+:: Backup Notepad++ working documents and shortcurs (macros)
+copy "%USERPROFILE%\AppData\Roaming\Notepad++\*" "%USERPROFILE%\documents\backups\notepad_backups\"
+copy "%USERPROFILE%\AppData\Roaming\Notepad++\shortcuts.xml" "%USERPROFILE%\documents\backups\shortcuts.xml
+:: Backup Subversion (SVN)
+copy "%USERPROFILE%\AppData\Roaming\subversion\config" "%USERPROFILE%\documents\backups\subversion_config"
+:: Backup Keepass Password manager database
+copy "%USERPROFILE%\Documents\pws.kdbx" "%USERPROFILE%\documents\backups\pws.kdbx"
+sync backup folder to remote destination
+:: sync local backup folder to remote destination - ensure there is a **space** after dest dir path otehrwsie doesnt work
+robocopy /MIR "%USERPROFILE%\documents\backups" "x:\Systems Administration Team\rick\ "
+:: sync backup to AWS s3 example
+:: aws s3 sync "%USERPROFILE%\documents\backups" s3://ricksbackup
