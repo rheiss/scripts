@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# This script will kill processes which have been running more than "x" seconds
+# created 10-13-2017 by Rick Heiss rheiss@gmail.com
+#
+##VARIABLES
+#Process to grep for in "command" output:
+PROCESS="mysql\-connector\-java\-*\-bin\.jar"
+#set timeout in number of seconds:
+TIMEOUT=60
+#
+PIDS="`ps -eo pid,etimes,command | grep $PROCESS | awk ' {if ($2 > $TIMEOUT) {print $1}}'`"
+# Kill the processes and exit
+for i in ${PIDS}; do { kill -9 $i; }; done;
