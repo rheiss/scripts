@@ -18,7 +18,8 @@ copy "%USERPROFILE%\AppData\Roaming\subversion\config" "%USERPROFILE%\documents\
 :: Backup Keepass Password manager database
 copy "%USERPROFILE%\Documents\pws.kdbx" "%USERPROFILE%\documents\backups\pws.kdbx"
 sync backup folder to remote destination
-:: sync local backup folder to remote destination - ensure there is a **space** after dest dir path otehrwsie doesnt work
+:: sync local backup folder to remote fileserver destination - ensure there is a **space** after dest dir path otehrwsie doesnt work
 robocopy /MIR "%USERPROFILE%\documents\backups" "x:\Systems Administration Team\rick\ "
 :: sync backup to AWS s3 example
 :: aws s3 sync "%USERPROFILE%\documents\backups" s3://ricksbackup
+
