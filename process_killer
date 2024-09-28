@@ -1,14 +1,52 @@
 #!/bin/bash
-#
-# This script will kill processes which have been running more than "x" seconds
-# created 10-13-2017 by Rick Heiss rheiss@gmail.com
-#
-##VARIABLES
-#Process to grep for in "command" output:
-PROCESS="mysql\-connector\-java\-*\-bin\.jar"
-#set timeout in number of seconds:
+
+# This script will kill processes running longer than a specified number of seconds.
+# Created 10-13-2017 by Rick Heiss rheiss@gmail.com
+# Updated 9-28-2024for improved safety and flexibility.
+
+# Usage: ./kill_long_running_processes.sh -p <process_name> -t <timeout_in_seconds>
+# Example: ./kill_long_running_processes.sh -p "mysql-connector-java-*-bin.jar" -t 60
+
+# Default values
 TIMEOUT=60
-#
-PIDS="`ps -eo pid,etimes,command | grep $PROCESS | awk ' {if ($2 > $TIMEOUT) {print $1}}'`"
-# Kill the processes and exit
-for i in ${PIDS}; do { kill -9 $i; }; done;
+PROCESS=""
+
+# Function to display usage
+usage() {
+    echo "Usage: $0 -p <process_name> -t <timeout_in_seconds>"
+    echo "  -p    Process name to search for (use grep-compatible syntax)"
+    echo "  -t    Timeout in seconds (default: 60)"
+    exit 1
+}
+
+# Parse command-line arguments
+while getopts ":p:t:" opt; do
+    case $opt in
+        p) PROCESS="$OPTARG" ;;
+        t) TIMEOUT="$OPTARG" ;;
+        *) usage ;;
+    esac
+done
+
+# Check if process name is provided
+if [ -z "$PROCESS" ]; then
+    echo "Error: Process name is required."
+    usage
+fi
+
+# Find and kill processes that match the criteria
+PIDS=$(ps -eo pid,etimes,command | grep "$PROCESS" | awk -v timeout="$TIMEOUT" '{if ($2 > timeout) {print $1}}')
+
+# Check if any processes were found
+if [ -z "$PIDS" ]; then
+    echo "No processes found matching '$PROCESS' running longer than $TIMEOUT seconds."
+    exit 0
+fi
+
+# Kill the processes and provide output
+for PID in $PIDS; do
+    echo "Killing process with PID: $PID"
+    kill -9 "$PID"
+done
+
+echo "Completed. Killed $(echo "$PIDS" | wc -w) process(es)."
