@@ -1,25 +1,72 @@
 @ECHO OFF
-:: Script to backup common app settings - Rick Heiss rheiss@gmail.com https://github.com/rheiss
+:: Universal Script to Backup Common App Settings
+:: Usage: Modify environment variables and paths as needed
 CLS
-:: Export Putty reg key to local file
-REGEDIT.EXE  /s /E  "%USERPROFILE%\documents\backups\putty_settings.reg" "HKEY_CURRENT_USER\Software\SimonTatham"
-:: Make Copy of iPhone backups
-copy "%APPDATA%\Apple Computer\MobileSync\backup\*" "%USERPROFILE%\documents\backups\iphonebackup\"
-:: Backup FileZilla Settings
-copy %USERPROFILE%\AppData\Roaming\FileZilla\filezilla.xml "%USERPROFILE%\documents\backups\filezilla_settings.xml"
-copy %USERPROFILE%\AppData\Roaming\FileZilla\sitemanager.xml "%USERPROFILE%\documents\backups\filezilla_sitemanager.xml"
-:: Backup IE bookmarks
-copy %USERPROFILE%\favorites "%USERPROFILE%\documents\backups\favorites"
-:: Backup Notepad++ working documents and shortcurs (macros)
-copy "%USERPROFILE%\AppData\Roaming\Notepad++\*" "%USERPROFILE%\documents\backups\notepad_backups\"
-copy "%USERPROFILE%\AppData\Roaming\Notepad++\shortcuts.xml" "%USERPROFILE%\documents\backups\shortcuts.xml
-:: Backup Subversion (SVN)
-copy "%USERPROFILE%\AppData\Roaming\subversion\config" "%USERPROFILE%\documents\backups\subversion_config"
-:: Backup Keepass Password manager database
-copy "%USERPROFILE%\Documents\pws.kdbx" "%USERPROFILE%\documents\backups\pws.kdbx"
-sync backup folder to remote destination
-:: sync local backup folder to remote fileserver destination - ensure there is a **space** after dest dir path otehrwsie doesnt work
-robocopy /MIR "%USERPROFILE%\documents\backups" "x:\Systems Administration Team\rick\ "
-:: sync backup to AWS s3 example
-:: aws s3 sync "%USERPROFILE%\documents\backups" s3://ricksbackup
 
+:: Set backup destination folder
+SET BACKUP_DIR=%USERPROFILE%\documents\backups
+
+:: Check if the backup directory exists, if not, create it
+IF NOT EXIST "%BACKUP_DIR%" (
+    ECHO Creating backup directory: %BACKUP_DIR%
+    MKDIR "%BACKUP_DIR%"
+)
+
+:: Export Putty registry keys to local file
+ECHO Backing up Putty settings...
+REGEDIT.EXE /s /E "%BACKUP_DIR%\putty_settings.reg" "HKEY_CURRENT_USER\Software\SimonTatham"
+
+:: Make a copy of iPhone backups
+ECHO Backing up iPhone backups...
+IF EXIST "%APPDATA%\Apple Computer\MobileSync\backup\" (
+    XCOPY /E /I /Y "%APPDATA%\Apple Computer\MobileSync\backup\*" "%BACKUP_DIR%\iphonebackup\"
+)
+
+:: Backup FileZilla settings
+ECHO Backing up FileZilla settings...
+IF EXIST "%USERPROFILE%\AppData\Roaming\FileZilla\filezilla.xml" (
+    COPY /Y "%USERPROFILE%\AppData\Roaming\FileZilla\filezilla.xml" "%BACKUP_DIR%\filezilla_settings.xml"
+)
+IF EXIST "%USERPROFILE%\AppData\Roaming\FileZilla\sitemanager.xml" (
+    COPY /Y "%USERPROFILE%\AppData\Roaming\FileZilla\sitemanager.xml" "%BACKUP_DIR%\filezilla_sitemanager.xml"
+)
+
+:: Backup Internet Explorer bookmarks (favorites)
+ECHO Backing up Internet Explorer bookmarks...
+IF EXIST "%USERPROFILE%\favorites" (
+    XCOPY /E /I /Y "%USERPROFILE%\favorites" "%BACKUP_DIR%\favorites\"
+)
+
+:: Backup Notepad++ working documents and shortcuts
+ECHO Backing up Notepad++ settings...
+IF EXIST "%USERPROFILE%\AppData\Roaming\Notepad++" (
+    XCOPY /E /I /Y "%USERPROFILE%\AppData\Roaming\Notepad++\*" "%BACKUP_DIR%\notepad_backups\"
+)
+IF EXIST "%USERPROFILE%\AppData\Roaming\Notepad++\shortcuts.xml" (
+    COPY /Y "%USERPROFILE%\AppData\Roaming\Notepad++\shortcuts.xml" "%BACKUP_DIR%\shortcuts.xml"
+)
+
+:: Backup Subversion (SVN) configuration
+ECHO Backing up Subversion configuration...
+IF EXIST "%USERPROFILE%\AppData\Roaming\subversion\config" (
+    COPY /Y "%USERPROFILE%\AppData\Roaming\subversion\config" "%BACKUP_DIR%\subversion_config"
+)
+
+:: Backup Keepass password manager database
+ECHO Backing up Keepass database...
+IF EXIST "%USERPROFILE%\Documents\pws.kdbx" (
+    COPY /Y "%USERPROFILE%\Documents\pws.kdbx" "%BACKUP_DIR%\pws.kdbx"
+)
+
+:: Sync backup folder to a remote destination (replace with your own remote path)
+ECHO Syncing backup folder to remote destination...
+REM Example: Uncomment and modify the line below for your remote file server
+REM robocopy /MIR "%BACKUP_DIR%" "X:\Path\To\Your\Backup\Folder"
+
+:: Sync backup to AWS S3 (requires AWS CLI)
+ECHO Syncing backup folder to AWS S3...
+REM Example: Uncomment and modify the line below to use AWS S3 for backup
+REM aws s3 sync "%BACKUP_DIR%" s3://your-s3-bucket-name
+
+ECHO Backup completed!
+PAUSE
