@@ -20,3 +20,23 @@ This is a Bash script to run JMeter smoke tests in non-GUI mode, store results, 
 
 ```bash
 ./run_jmeter_test.sh -t <test-plan> -b <s3-bucket> [-d <results-dir>]
+```
+### Output
+- **Results Directory**: A directory (default: `results`) containing timestamped `.jtl` and log files for each test run.
+- **HTML Status Page**: A `status.html` file that displays the test history with buttons to show logs and results.
+- **S3 Uploads**: The script uploads the `status.html`, the JMeter log file, and the results file to the specified S3 bucket.
+
+### Notes
+- The script checks for failures in the results file and exits with a failure code if any are found.
+- Results older than 30 days are automatically deleted to save space.
+- The script generates a new status page if one does not already exist.
+- Customize the HTML and JavaScript within the script for your needs (e.g., to add custom styles).
+
+### Requirements
+- **JMeter**: Ensure JMeter is installed and accessible from the command line.
+- **AWS CLI**: Install and configure the AWS CLI with the necessary permissions to upload files to the S3 bucket.
+- **Permissions**: Make sure the script has execute permissions:
+
+    ```bash
+    chmod +x run_jmeter_test.sh
+    ```
